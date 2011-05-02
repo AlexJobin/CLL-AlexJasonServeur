@@ -2,13 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMainWindow>
 #include <QVariant>
 #include <QDir>
 #include <QTimer>
 #include <QtGui>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QThread>
 #include <string>
+#include <QVariant>
 
 namespace Ui {
     class MainWindow;
@@ -27,6 +29,7 @@ private slots:
     void sltimerout();
     void Cherchejoueurs();
     void nouvconnection();
+    int randInt(int low, int high);
 
 private:
     Ui::MainWindow *ui;
@@ -35,8 +38,13 @@ private:
     int nbJoueurs;
     int VieJ1;
     int VieJ2;
+    QTcpSocket *SocketJ1;
+    QTcpSocket *SocketJ2;
+    QTcpServer *Serveur;
+    QVariant Note;
     QString NomJ1;
     QString NomJ2;
+    QByteArray Envoie;
 };
 
 #endif // MAINWINDOW_H
