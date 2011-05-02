@@ -31,6 +31,8 @@ private slots:
     void nouvconnection();
     int randInt(int low, int high);
 
+    void on_MainWindow_destroyed();
+
 private:
     Ui::MainWindow *ui;
     QTimer *timer;
@@ -42,9 +44,8 @@ private:
     QTcpSocket *SocketJ2;
     QTcpServer *Serveur;
     QVariant Note;
-    QString NomJ1;
-    QString NomJ2;
     QByteArray Envoie;
+    QByteArray Recue;
 };
 
 #endif // MAINWINDOW_H
