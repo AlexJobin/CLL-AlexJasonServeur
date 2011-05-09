@@ -74,7 +74,7 @@ void MainWindow::sltimerout()
         PartiEnCours = true;
         QTime time = QTime::currentTime();
         qsrand((uint)time.msec());
-        Note.setValue(randInt(0,5));
+        Note.setValue(randInt(1,5));
         Envoie.append(Note.ByteArray);
         SocketJ1->write(Envoie);
         SocketJ2->write(Envoie);
