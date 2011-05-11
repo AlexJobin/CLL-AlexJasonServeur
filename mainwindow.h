@@ -37,9 +37,10 @@ private:
     Ui::MainWindow *ui;
     QTimer *timer;
     bool PartiEnCours;
+    bool JoueurMort;
+    bool J1;
+    bool J2;
     int nbJoueurs;
-    int VieJ1;
-    int VieJ2;
     QTcpSocket *SocketJ1;
     QTcpSocket *SocketJ2;
     QTcpServer *Serveur;

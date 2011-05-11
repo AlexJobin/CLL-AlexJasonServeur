@@ -12,14 +12,15 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     nbJoueurs =0;
-    VieJ1 =10;
-    VieJ2 =10;
     timer = new QTimer;
     Serveur = new QTcpServer;
     timer->setInterval(1000);
     connect(timer, SIGNAL(timeout()), this, SLOT(sltimerout()));
     connect(Serveur, SIGNAL(newConnection()), this, SLOT(nouvconnection()));
     PartiEnCours =false;
+    JoueurMort = false;
+    J1 = false;
+    J2 = false;
 }
 
 MainWindow::~MainWindow()
@@ -43,27 +44,51 @@ void MainWindow::sltimerout()
 {
     QVariant v;
     if(SocketJ1->bytesAvailable() != 0)
-    {
+      {
         Recue.append((SocketJ1->read(SocketJ1->bytesAvailable())));
         v.setValue(Recue);
-        VieJ1 = v.toInt();
-        Envoie.append("V:"+ v.toString());
-        SocketJ2->write(Envoie);
-    }
+        if(v.toString() != "#")
+        {
+            if(v.toString() == "F")
+            {
+                Envoie.append("F");
+                JoueurMort = true;
+            }
+            if(v.toString() == "V")
+                Envoie.append("V");
+
+            SocketJ2->write(Envoie);
+        }
+        else
+            J1 = true;
+        }
+
     if(SocketJ2->bytesAvailable() != 0)
-    {
+      {
         Recue.append((SocketJ2->read(SocketJ2->bytesAvailable())));
         v.setValue(Recue);
-        VieJ2 = v.toInt();
-        Envoie.append("V:"+ v.toString());
-        SocketJ1->write(Envoie);
+        if(v.toString() != "#")
+        {
+            if(v.toString() == "F")
+            {
+                Envoie.append("F");
+                JoueurMort = true;
+            }
+            if(v.toString() == "V")
+                Envoie.append("V");
+
+            SocketJ1->write(Envoie);
+      }
+        else
+            J2 = true;
     }
 
-    if(VieJ1 ==0 || VieJ2 ==0)
+
+    if(JoueurMort)
     {
         timer->stop();
         PartiEnCours = false;
-        QString s = "Fin de la partie";
+        QString s = "F";
         v.setValue(s);
         Envoie = v.toByteArray();
         SocketJ1->write(Envoie);
@@ -71,13 +96,20 @@ void MainWindow::sltimerout()
     }
     else
     {
-        PartiEnCours = true;
-        QTime time = QTime::currentTime();
-        qsrand((uint)time.msec());
-        Note.setValue(randInt(1,5));
-        Envoie.append(Note.ByteArray);
-        SocketJ1->write(Envoie);
-        SocketJ2->write(Envoie);
+        if(J1 == true && J2 == true)
+        {
+            PartiEnCours = true;
+            QTime time = QTime::currentTime();
+            qsrand((uint)time.msec());
+            Note.setValue(randInt(1,5));
+            Envoie.append(Note.ByteArray);
+            SocketJ1->write(Envoie);
+            SocketJ1->waitForBytesWritten();
+            SocketJ2->write(Envoie);
+            SocketJ2->waitForBytesWritten();
+            J1 = false;
+            J2 = false;
+        }
     }
 }
 void MainWindow::nouvconnection()
@@ -92,6 +124,9 @@ void MainWindow::nouvconnection()
     {
         SocketJ2 = Serveur->nextPendingConnection();
         nbJoueurs ++;
+        JoueurMort = false;
+        J1 = false;
+        J2 = false;
     }
 }
 void MainWindow::Cherchejoueurs()
