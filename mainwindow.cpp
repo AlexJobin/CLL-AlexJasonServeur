@@ -58,6 +58,7 @@ void MainWindow::sltimerout()
                 Envoie.append("V");
 
             SocketJ2->write(Envoie);
+            SocketJ2->waitForBytesWritten();
         }
         else
             J1 = true;
@@ -78,6 +79,7 @@ void MainWindow::sltimerout()
                 Envoie.append("V");
 
             SocketJ1->write(Envoie);
+            SocketJ1->waitForBytesWritten();
       }
         else
             J2 = true;
@@ -92,7 +94,9 @@ void MainWindow::sltimerout()
         v.setValue(s);
         Envoie = v.toByteArray();
         SocketJ1->write(Envoie);
+        SocketJ1->waitForBytesWritten();
         SocketJ2->write(Envoie);
+        SocketJ2->waitForBytesWritten();
     }
     else
     {
@@ -134,7 +138,7 @@ void MainWindow::Cherchejoueurs()
     while(nbJoueurs !=2)
     {
         if(!Serveur->isListening())
-        Serveur->listen(QHostAddress::Any,0);
+        Serveur->listen(QHostAddress::Any,65124);
     }
 }
 
