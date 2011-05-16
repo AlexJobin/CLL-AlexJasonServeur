@@ -13,14 +13,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     nbJoueurs =0;
     timer = new QTimer;
-    Serveur = new QTcpServer;
-    timer->setInterval(1000);
+    Serveur = new QTcpServer();
+    timer->setInterval(350);
     connect(timer, SIGNAL(timeout()), this, SLOT(sltimerout()));
     connect(Serveur, SIGNAL(newConnection()), this, SLOT(nouvconnection()));
+    //Serveur->setMaxPendingConnections(2);
+    Serveur->listen(QHostAddress::Any,65124);
     PartiEnCours =false;
     JoueurMort = false;
-    J1 = false;
-    J2 = false;
+    J1 = true;
+    J2 = true;
+
 }
 
 MainWindow::~MainWindow()
@@ -30,14 +33,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_btnPartirServeur_clicked()
 {
-    while (true)
-    {
-        while(PartiEnCours == false)
-        {
-            Cherchejoueurs();
-            timer->start();
-        }
-    }
 }
 
 void MainWindow::sltimerout()
@@ -45,8 +40,12 @@ void MainWindow::sltimerout()
     QVariant v;
     if(SocketJ1->bytesAvailable() != 0)
       {
+
         Recue.append((SocketJ1->read(SocketJ1->bytesAvailable())));
+        if(Recue.length() > 1)
+            Recue.remove(0,1);
         v.setValue(Recue);
+
         if(v.toString() != "#")
         {
             if(v.toString() == "F")
@@ -66,8 +65,12 @@ void MainWindow::sltimerout()
 
     if(SocketJ2->bytesAvailable() != 0)
       {
+
         Recue.append((SocketJ2->read(SocketJ2->bytesAvailable())));
+        if(Recue.length() > 1)
+            Recue.remove(0,1);
         v.setValue(Recue);
+
         if(v.toString() != "#")
         {
             if(v.toString() == "F")
@@ -106,10 +109,13 @@ void MainWindow::sltimerout()
             QTime time = QTime::currentTime();
             qsrand((uint)time.msec());
             Note.setValue(randInt(1,5));
-            Envoie.append(Note.ByteArray);
+
+            Envoie.append(Note.toByteArray());
+            if(Envoie.length() > 1)
+                Envoie.remove(0,1);
             SocketJ1->write(Envoie);
-            SocketJ1->waitForBytesWritten();
             SocketJ2->write(Envoie);
+            SocketJ1->waitForBytesWritten();
             SocketJ2->waitForBytesWritten();
             J1 = false;
             J2 = false;
@@ -118,28 +124,29 @@ void MainWindow::sltimerout()
 }
 void MainWindow::nouvconnection()
 {
-    if(nbJoueurs == 0)
+    if(PartiEnCours == false)
     {
-        SocketJ1 = Serveur->nextPendingConnection();
-        nbJoueurs ++;
-    }
+        if(nbJoueurs == 1)
+        {
+            SocketJ2 = Serveur->nextPendingConnection();
+            nbJoueurs ++;
+            JoueurMort = false;
+            J1 = true;
+            J2 = true;
+            timer->start();
+        }
 
-    if(nbJoueurs == 1)
-    {
-        SocketJ2 = Serveur->nextPendingConnection();
-        nbJoueurs ++;
-        JoueurMort = false;
-        J1 = false;
-        J2 = false;
+        if(nbJoueurs == 0)
+        {
+            SocketJ1 = Serveur->nextPendingConnection();
+            nbJoueurs ++;
+        }
+
+
     }
 }
 void MainWindow::Cherchejoueurs()
 {
-    while(nbJoueurs !=2)
-    {
-        if(!Serveur->isListening())
-        Serveur->listen(QHostAddress::Any,65124);
-    }
 }
 
 int MainWindow::randInt(int low, int high)
