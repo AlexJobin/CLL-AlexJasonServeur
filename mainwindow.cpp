@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     nbJoueurs =0;
     timer = new QTimer;
     Serveur = new QTcpServer();
-    timer->setInterval(350);
+    timer->setInterval(300);
     connect(timer, SIGNAL(timeout()), this, SLOT(sltimerout()));
     connect(Serveur, SIGNAL(newConnection()), this, SLOT(nouvconnection()));
     //Serveur->setMaxPendingConnections(2);
@@ -108,7 +108,7 @@ void MainWindow::sltimerout()
             PartiEnCours = true;
             QTime time = QTime::currentTime();
             qsrand((uint)time.msec());
-            Note.setValue(randInt(1,5));
+            Note.setValue(randInt(1,9));
 
             Envoie.append(Note.toByteArray());
             if(Envoie.length() > 1)
